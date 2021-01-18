@@ -1,10 +1,9 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 import itertools
 import os
 
-from lab.environments import LocalEnvironment, BaselSlurmEnvironment
 from lab.environments import FreiburgSlurmEnvironment
 
 from downward.reports.compare import ComparativeReport
