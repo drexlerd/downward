@@ -28,8 +28,8 @@ exp = FastDownwardExperiment(environment=ENV, revision_cache=REVISION_CACHE)
 
 exp.add_suite(BENCHMARKS, SUITE)
 
-#exp.add_algorithm("issue348-base", REPO, "issue348-base", ["--search", "astar(blind())"])
-exp.add_algorithm("issue348-v20", REPO, "issue348-v20", ["--search", "astar(blind())"])
+exp.add_algorithm("issue348-base", REPO, "issue348-base", ["--search", "astar(blind())"])
+#exp.add_algorithm("issue348-v20", REPO, "issue348-v20", ["--search", "astar(blind())"])
 
 # "For single-search experiments, we recommend adding the following parsers in this order:"
 exp.add_parser(exp.EXITCODE_PARSER)
