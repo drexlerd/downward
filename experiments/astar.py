@@ -11,7 +11,7 @@ from downward.reports.absolute import AbsoluteReport
 from lab.environments import TetralithEnvironment, LocalEnvironment
 from lab.experiment import Experiment
 from lab.reports import Attribute, geometric_mean
-from brfs_parser import BrfsParser
+from astar_parser import AStarParser
 import utils
 
 # Create custom report class with suitable info and error attributes.
@@ -59,12 +59,12 @@ ATTRIBUTES = [
     "invalid_plan_reported",
 ]
 
-MEMORY_LIMIT = 2500
+MEMORY_LIMIT = 8000
 
 # Create a new experiment.
 exp = Experiment(environment=ENV)
 # Add custom parser for FF.
-exp.add_parser(BrfsParser())
+exp.add_parser(AStarParser())
 
 
 exp.add_resource("fast_downward_py", str(REPO / "fast-downward.py"))

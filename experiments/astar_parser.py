@@ -2,9 +2,6 @@
 
 from lab.parser import Parser
 
-def search_time_to_ms(content, props):
-    if "search_time" in props:
-        props["search_time"] = props["search_time"] * 1000
 
 def coverage(content, props):
     props["coverage"] = int("cost" in props)
@@ -14,8 +11,13 @@ def unsolvable(content, props):
 
 def invalid_plan_reported(content, props):
     props["invalid_plan_reported"] = int("val_plan_invalid" in props)
+    
+def translate_search_time_to_ms(content, props):
+    if "search_time" in props:
+        props["search_time"] *= 1000
 
-class BrfsParser(Parser):
+
+class AStarParser(Parser):
     """
     Successful Run:
     [t=0.004009s, 10816 KB] Plan cost: 11
@@ -40,7 +42,7 @@ class BrfsParser(Parser):
     """
     def __init__(self):
         super().__init__()
-        self.add_pattern("search_time", r"\[.*\] Search time: (.+)s", type=float)
+        self.add_pattern("search_time", r"\[.*\] Total time: (.+)s", type=float)
         self.add_pattern("num_expanded", r"\[.*\] Expanded (\d+) state\(s\).", type=int)
         self.add_pattern("num_generated", r"\[.*\] Generated (\d+) state\(s\).", type=int)
         self.add_pattern("num_expanded_until_last_f_layer", r"\[.*\] Expanded until last jump: (\d+) state\(s\).", type=int)
@@ -52,4 +54,5 @@ class BrfsParser(Parser):
         self.add_function(coverage)
         self.add_function(unsolvable)
         self.add_function(invalid_plan_reported)
-        self.add_function(search_time_to_ms)
+        self.add_function(translate_search_time_to_ms)
+
