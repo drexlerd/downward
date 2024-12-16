@@ -48,6 +48,7 @@ class AStarParser(Parser):
         self.add_pattern("num_expanded_until_last_f_layer", r"\[.*\] Expanded until last jump: (\d+) state\(s\).", type=int)
         self.add_pattern("num_generated_until_last_f_layer", r"\[.*\] Generated until last jump: (\d+) state\(s\).", type=int)
         self.add_pattern("cost", r"\[.*\] Plan cost: (.+)", type=float)
+        self.add_pattern("length", r"\[.*\] Plan length: (\d+) step\(s\).", type=int)
         self.add_pattern("exhausted", r"(Search stopped without finding a solution.)", type=str)
         self.add_pattern("val_plan_invalid", r"(Plan invalid)", type=str)
 
