@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 
 from lab.parser import Parser
 
@@ -42,7 +42,8 @@ class AStarParser(Parser):
     """
     def __init__(self):
         super().__init__()
-        self.add_pattern("search_time", r"\[.*\] Total time: (.+)s", type=float)
+        self.add_pattern("search_time", r"\[.*\] Search time: (.+)s", type=float)
+        self.add_pattern("total_time", r"\[.*\] Total time: (.+)s", type=float)
         self.add_pattern("num_expanded", r"\[.*\] Expanded (\d+) state\(s\).", type=int)
         self.add_pattern("num_generated", r"\[.*\] Generated (\d+) state\(s\).", type=int)
         self.add_pattern("num_expanded_until_last_f_layer", r"\[.*\] Expanded until last jump: (\d+) state\(s\).", type=int)
