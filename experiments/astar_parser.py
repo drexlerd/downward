@@ -16,6 +16,12 @@ def translate_search_time_to_ms(content, props):
     if "search_time" in props:
         props["search_time"] *= 1000
 
+def ensure_minimum_times(content, props):
+    for attr in ["search_time", "total_time"]:
+        time = props.get(attr, None)
+        if time is not None:
+            props[attr] = max(time, 0.01) 
+
 
 class AStarParser(Parser):
     """
@@ -57,4 +63,5 @@ class AStarParser(Parser):
         self.add_function(unsolvable)
         self.add_function(invalid_plan_reported)
         self.add_function(translate_search_time_to_ms)
+        self.add_function(ensure_minimum_times)
 
