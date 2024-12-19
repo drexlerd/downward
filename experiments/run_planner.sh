@@ -22,7 +22,7 @@ fi
 export LANG=C
 
 # Run planner
-"$fast_downward_py" "$domain_file" "$problem_file" "--search" "astar(blind())"
+"$fast_downward_py" "$domain_file" "$problem_file" "--translate-options" "--keep-unimportant-variables" "--search-options" "--search" "astar(blind())"
 
 # Run VAL
 echo -e "\nRun VAL\n"
