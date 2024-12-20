@@ -12,6 +12,10 @@ def unsolvable(content, props):
 def invalid_plan_reported(content, props):
     props["invalid_plan_reported"] = int("val_plan_invalid" in props)
 
+def remove_total_time_for_unsolved(content, props):
+    if props["coverage"] == 0:
+        del props["total_time"]
+
 def translate_search_time_to_ms(content, props):
     if "search_time" in props:
         props["search_time"] = int(1000 * props["search_time"])
@@ -66,6 +70,7 @@ class AStarParser(Parser):
         self.add_function(coverage)
         self.add_function(unsolvable)
         self.add_function(invalid_plan_reported)
+        self.add_function(remove_total_time_for_unsolved)
         self.add_function(translate_search_time_to_ms)
         self.add_function(translate_total_time_to_ms)
         self.add_function(ensure_minimum_times)
