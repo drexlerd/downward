@@ -11,16 +11,20 @@ def unsolvable(content, props):
 
 def invalid_plan_reported(content, props):
     props["invalid_plan_reported"] = int("val_plan_invalid" in props)
-    
+
 def translate_search_time_to_ms(content, props):
     if "search_time" in props:
-        props["search_time"] *= 1000
+        props["search_time"] = int(1000 * props["search_time"])
+
+def translate_total_time_to_ms(content, props):
+    if "total_time" in props:
+        props["total_time"] = int(1000 * props["total_time"])
 
 def ensure_minimum_times(content, props):
     for attr in ["search_time", "total_time"]:
         time = props.get(attr, None)
         if time is not None:
-            props[attr] = max(time, 1) 
+            props[attr] = max(time, 1)
 
 
 class AStarParser(Parser):
@@ -49,7 +53,7 @@ class AStarParser(Parser):
     def __init__(self):
         super().__init__()
         self.add_pattern("search_time", r"\[.*\] Search time: (.+)s", type=float)
-        self.add_pattern("total_time", r"\[.*\] Total time: (.+)s", type=float)
+        self.add_pattern("total_time", r"\[.*\] Planner time: (.+)s", type=float)
         self.add_pattern("num_expanded", r"\[.*\] Expanded (\d+) state\(s\).", type=int)
         self.add_pattern("num_generated", r"\[.*\] Generated (\d+) state\(s\).", type=int)
         self.add_pattern("num_expanded_until_last_f_layer", r"\[.*\] Expanded until last jump: (\d+) state\(s\).", type=int)
@@ -63,5 +67,6 @@ class AStarParser(Parser):
         self.add_function(unsolvable)
         self.add_function(invalid_plan_reported)
         self.add_function(translate_search_time_to_ms)
+        self.add_function(translate_total_time_to_ms)
         self.add_function(ensure_minimum_times)
 
