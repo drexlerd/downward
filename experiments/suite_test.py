@@ -124,7 +124,7 @@ SUITE_IPC_SATISFICING_STRIPS_TEST = [
     "miconic:s1-0.pddl", 
     "movie:prob01.pddl", 
     "mprime:prob01.pddl", 
-    "mystery:prob01.pddl", 
+    "mystery:prob07.pddl", # unsolvable task
     "nomystery-sat11-strips:p01.pddl", 
     "openstacks-sat08-strips:p01.pddl", 
     "openstacks-sat11-strips:p01.pddl", 

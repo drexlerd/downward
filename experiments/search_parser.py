@@ -114,6 +114,7 @@ class SearchParser(Parser):
         self.add_pattern("cost", r"Plan cost: (\d+)", type=int)
         self.add_pattern("length", r"Plan length: (\d+) step\(s\).", type=int)
         self.add_pattern("initial_h_value", r"Initial heuristic value for ff: (\d+)", type=int)
+        self.add_pattern("exhausted", r"(Search stopped without finding a solution.)", type=str)
         self.add_pattern("invalid", r"(Plan invalid)", type=str)
         self.add_pattern("memory", r"Peak memory: (\d+) KB", type=int)
 
