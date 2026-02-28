@@ -22,7 +22,7 @@ fi
 export LANG=C
 
 # Run planner
-"$fast_downward_py" "$domain_file" "$problem_file" "--search" "lazy_greedy([ff()], preferred=[ff()], boost=1000, randomize_successors=true, random_seed=0)"
+"$fast_downward_py" "$domain_file" "$problem_file" "--evaluator" "hff=ff(transform=adapt_costs(one))" "--search" "lazy_greedy([hff], preferred=[hff], boost=1000, randomize_successors=true, random_seed=0)"
 
 # Run VAL
 echo -e "\nRun VAL\n"
