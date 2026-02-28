@@ -22,7 +22,7 @@ fi
 export LANG=C
 
 # Run planner
-"$fast_downward_py" "$domain_file" "$problem_file" "--translate-options" "--keep-unimportant-variables" "--search-options" "--search" "astar(blind())"
+"$fast_downward_py" "$domain_file" "$problem_file" "--search" "lazy_greedy([ff()], preferred=[ff()], boost=1000, randomize_successors=true, random_seed=0)"
 
 # Run VAL
 echo -e "\nRun VAL\n"
@@ -30,7 +30,18 @@ echo -e "\nRun VAL\n"
 # After running the planner, check if the plan file was created
 if [ -f "$plan_file" ]; then
     echo "Found plan file."
-    validate -v "$domain_file" "$problem_file" "$plan_file"
+
+    # Check for 'Validate' or 'validate'
+    if command -v Validate &>/dev/null; then
+        val_binary="Validate"
+    elif command -v validate &>/dev/null; then
+        val_binary="validate"
+    else
+        echo "Error: Neither 'Validate' nor 'validate' command is found."
+        exit 1
+    fi
+
+    "$val_binary" -v "$domain_file" "$problem_file" "$plan_file"
 else
     echo "No plan file found."
     exit 99
