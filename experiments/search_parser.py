@@ -26,8 +26,8 @@ def add_search_time_ms_per_expanded(context, props):
  
 def compute_total_time(content, props):
     # total_time is translation_time + search_time
-    if "translation_time_s" in props and "search_time_s" in props:
-        props["total_time_s"] = props["translation_time_s"] + props["search_time_s"]
+    if "translation_time_s" in props and "downward_total_time_s" in props:
+        props["total_time_s"] = props["translation_time_s"] + props["downward_total_time_s"]
 
 class SearchParser(Parser):
     """
@@ -106,7 +106,7 @@ class SearchParser(Parser):
         super().__init__()
         self.add_pattern("translation_time_s", r"Done! \[.*s CPU, (.*)s wall-clock\]", type=float)
         self.add_pattern("search_time_s", r"Search time: (.+)s", type=float)  
-        self.add_pattern("total_time_s", r"Planner time: (.*)s", type=float)
+        self.add_pattern("downward_total_time_s", r"Total time: (.*)s", type=float)
         self.add_pattern("num_expanded", r"Expanded (\d+) state\(s\).", type=int)
         self.add_pattern("num_generated", r"Generated (\d+) state\(s\).", type=int)
         self.add_pattern("cost", r"Plan cost: (\d+)", type=int)
@@ -121,3 +121,4 @@ class SearchParser(Parser):
         self.add_function(process_memory_mb)
         self.add_function(add_coverage)
         self.add_function(add_search_time_ms_per_expanded)
+        self.add_function(compute_total_time)
