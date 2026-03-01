@@ -9,9 +9,9 @@ def process_unsolvable(content, props):
 def process_invalid(content, props):
     props["invalid"] = int("invalid" in props)
 
-def process_memory(content, props):
-    if "memory" in props:
-        props["memory"] = props["memory"] / 1000
+def process_memory_mb(content, props):
+    if "peak_memory_usage_kb" in props:
+        props["memory_mb"] = props["peak_memory_usage_kb"] / 1000
 
 def add_coverage(content, props):
     if "cost" in props or props.get("unsolvable", 0):
@@ -19,17 +19,15 @@ def add_coverage(content, props):
     else:
         props["coverage"] = 0
 
-def add_search_time_us_per_expanded(context, props):
-    if "search_time" in props:
-        if props["num_expanded"] == 0:
-            props["search_time_us_per_expanded"] = 1
-        else:
-            props["search_time_us_per_expanded"] = (props["search_time"] * 1_000_000) / props["num_expanded"]
+def add_search_time_ms_per_expanded(context, props):
+    if "search_time_s" in props:
+        if props["num_expanded"] > 0:
+            props["search_time_ms_per_expanded"] = (props["search_time_s"] * 1_000) / props["num_expanded"]
  
 def compute_total_time(content, props):
     # total_time is translation_time + search_time
-    if "translation_time" in props and "search_time" in props:
-        props["total_time"] = props["translation_time"] + props["search_time"]
+    if "translation_time_s" in props and "search_time_s" in props:
+        props["total_time_s"] = props["translation_time_s"] + props["search_time_s"]
 
 class SearchParser(Parser):
     """
@@ -106,9 +104,9 @@ class SearchParser(Parser):
     """
     def __init__(self):
         super().__init__()
-        self.add_pattern("translation_time", r"Done! \[.*s CPU, (.*)s wall-clock\]", type=float)
-        self.add_pattern("search_time", r"Search time: (.+)s", type=float)  
-        self.add_pattern("total_time", r"Planner time: (.*)s", type=float)
+        self.add_pattern("translation_time_s", r"Done! \[.*s CPU, (.*)s wall-clock\]", type=float)
+        self.add_pattern("search_time_s", r"Search time: (.+)s", type=float)  
+        self.add_pattern("total_time_s", r"Planner time: (.*)s", type=float)
         self.add_pattern("num_expanded", r"Expanded (\d+) state\(s\).", type=int)
         self.add_pattern("num_generated", r"Generated (\d+) state\(s\).", type=int)
         self.add_pattern("cost", r"Plan cost: (\d+)", type=int)
@@ -116,10 +114,10 @@ class SearchParser(Parser):
         self.add_pattern("initial_h_value", r"Initial heuristic value for ff: (\d+)", type=int)
         self.add_pattern("exhausted", r"(Search stopped without finding a solution.)", type=str)
         self.add_pattern("invalid", r"(Plan invalid)", type=str)
-        self.add_pattern("memory", r"Peak memory: (\d+) KB", type=int)
+        self.add_pattern("peak_memory_usage_kb", r"Peak memory: (\d+) KB", type=int)
 
         self.add_function(process_unsolvable)
         self.add_function(process_invalid)
-        self.add_function(process_memory)
+        self.add_function(process_memory_mb)
         self.add_function(add_coverage)
-        self.add_function(add_search_time_us_per_expanded)
+        self.add_function(add_search_time_ms_per_expanded)
