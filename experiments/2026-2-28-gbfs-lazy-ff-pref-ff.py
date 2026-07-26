@@ -2,12 +2,12 @@
 
 import platform
 import re
-import os
 import sys
 
 from pathlib import Path
 
-from downward import suites
+import pypddl_datasets
+
 from downward.reports.absolute import AbsoluteReport
 from lab.environments import TetralithEnvironment, LocalEnvironment
 from lab.experiment import Experiment
@@ -15,14 +15,8 @@ from lab.reports import Attribute, geometric_mean
 from search_parser import SearchParser
 
 DIR = Path(__file__).resolve().parent
-REPO = DIR.parent.parent
 
 sys.path.append(str(DIR.parent))
-
-from suite import SUITE_CNOT_SYNTHESIS, SUITE_IPC_OPTIMAL_STRIPS, SUITE_IPC_OPTIMAL_ADL, SUITE_IPC_SATISFICING_STRIPS, SUITE_IPC_LEARNING, SUITE_AUTOSCALE_OPTIMAL_STRIPS, SUITE_AUTOSCALE_AGILE_STRIPS, SUITE_HTG, SUITE_IPC2023_NUMERIC, SUITE_PUSHWORLD, SUITE_BELUGA2025_SCALABILITY_DETERMINISTIC, SUITE_MINEPDDL, SUITE_IPC_SATISFICING_ADL
-from suite_test import SUITE_CNOT_SYNTHESIS_TEST, SUITE_IPC_OPTIMAL_STRIPS_TEST, SUITE_IPC_OPTIMAL_ADL_TEST, SUITE_IPC_SATISFICING_STRIPS_TEST, SUITE_IPC_LEARNING_TEST, SUITE_AUTOSCALE_OPTIMAL_STRIPS_TEST, SUITE_AUTOSCALE_AGILE_STRIPS_TEST, SUITE_HTG_TEST, SUITE_IPC2023_NUMERIC_TEST, SUITE_PUSHWORLD_TEST, SUITE_BELUGA2025_SCALABILITY_DETERMINISTIC_TEST, SUITE_MINEPDDL_TEST, SUITE_IPC_SATISFICING_ADL_TEST
-
-
 
 # Create custom report class with suitable info and error attributes.
 class BaseReport(AbsoluteReport):
@@ -38,7 +32,6 @@ class BaseReport(AbsoluteReport):
 
 DIR = Path(__file__).resolve().parent
 REPO = DIR.parent
-BENCHMARKS_DIR = Path(os.environ["BENCHMARKS_PDDL"])
 
 NODE = platform.node()
 REMOTE = re.match(r"tetralith\d+.nsc.liu.se|n\d+", NODE)
@@ -55,34 +48,15 @@ else:
 
 if REMOTE:
     SUITES = [
-        #("cnot-synthesis", SUITE_CNOT_SYNTHESIS),
-        #("downward-benchmarks", SUITE_IPC_OPTIMAL_STRIPS),
-        #("downward-benchmarks", SUITE_IPC_OPTIMAL_ADL),
-        #("downward-benchmarks", SUITE_IPC_SATISFICING_STRIPS),
-        #("downward-benchmarks", SUITE_IPC_SATISFICING_ADL),
-        #("ipc2023-learning", SUITE_IPC_LEARNING),
-        #("autoscale-benchmarks-main/21.11-optimal-strips", SUITE_AUTOSCALE_OPTIMAL_STRIPS),
-        ("autoscale-benchmarks-main/21.11-agile-strips", SUITE_AUTOSCALE_AGILE_STRIPS),
-        ("htg-domains/flat", SUITE_HTG),
-        #("pushworld", SUITE_PUSHWORLD),
-        #("beluga2025", SUITE_BELUGA2025_SCALABILITY_DETERMINISTIC),
-        #("mine-pddl", SUITE_MINEPDDL),
+        "autoscale-agile-strips",
+        "htg",
     ]
     WALL_TIME_LIMIT = 10 * 60
 else:
     SUITES = [
-        #("downward-benchmarks", ["gripper:prob01.pddl"]), 
-        #("cnot-synthesis", SUITE_CNOT_SYNTHESIS_TEST),
-        #("downward-benchmarks", SUITE_IPC_OPTIMAL_STRIPS_TEST),
-        #("downward-benchmarks", SUITE_IPC_OPTIMAL_ADL_TEST),
-        ("downward-benchmarks", SUITE_IPC_SATISFICING_STRIPS_TEST),
-        ("downward-benchmarks", SUITE_IPC_SATISFICING_ADL_TEST),
-        #("ipc2023-learning", SUITE_IPC_LEARNING_TEST),
-        #("autoscale-benchmarks-main/21.11-optimal-strips", SUITE_AUTOSCALE_OPTIMAL_STRIPS_TEST),
-        #("htg-domains/flat", SUITE_HTG_TEST),
-        #("pushworld", SUITE_PUSHWORLD_TEST),
-        #("beluga2025", SUITE_BELUGA2025_SCALABILITY_DETERMINISTIC_TEST),
-        #("mine-pddl", SUITE_MINEPDDL_TEST),
+        "ipc-satisficing-strips-test",
+        "ipc-satisficing-adl-test",
+        "autoscale-agile-strips-test",
     ]
     WALL_TIME_LIMIT = 5
 
@@ -117,32 +91,24 @@ exp.add_resource("translator", str(REPO / "builds" / "release" / "bin" / "transl
 exp.add_resource("downward", str(REPO / "builds" / "release" / "bin" / "downward"), str(Path("builds") / "release" / "bin" / "downward"))
 exp.add_resource("planner_exe", DIR / "gbfs-lazy-hff-pref-ff.sh")
 
-for prefix, SUITE in SUITES:
-    for task in suites.build_suite(BENCHMARKS_DIR / prefix, SUITE):
-        run = exp.add_run()
-        run.add_resource("domain", task.domain_file, symlink=True)
-        run.add_resource("problem", task.problem_file, symlink=True)
-        # 'ff' binary has to be on the PATH.
-        # We could also use exp.add_resource().
-        run.add_command(
-            "run_planner",
-            ["{planner_exe}", "{fast_downward_py}", "{domain}", "{problem}", "sas_plan"],
-            wall_time_limit=WALL_TIME_LIMIT,
-            memory_limit=MEMORY_LIMIT,
-        )
-        # AbsoluteReport needs the following properties:
-        # 'domain', 'problem', 'algorithm', 'coverage'.
-        run.set_property("domain", task.domain)
-        run.set_property("problem", task.problem)
-        run.set_property("algorithm", "downward-gbfs-lazy-hff-pref-ff")
-        # BaseReport needs the following properties:
-        # 'time_limit', 'memory_limit'.
-        run.set_property("wall_time_limit", WALL_TIME_LIMIT)
-        run.set_property("memory_limit", MEMORY_LIMIT)
-        # Every run has to have a unique id in the form of a list.
-        # The algorithm name is only really needed when there are
-        # multiple algorithms.
-        run.set_property("id", ["downward-gbfs-lazy-hff-pref-ff", task.domain, task.problem])
+for SUITE in SUITES:
+    for domain in pypddl_datasets.fetch_suite(SUITE).domains:
+        for task in domain.tasks:
+            run = exp.add_run()
+            run.add_resource("domain", task.domain_path, symlink=True)
+            run.add_resource("problem", task.task_path, symlink=True)
+            run.add_command(
+                "run_planner",
+                ["{planner_exe}", "{fast_downward_py}", "{domain}", "{problem}", "sas_plan"],
+                wall_time_limit=WALL_TIME_LIMIT,
+                memory_limit=MEMORY_LIMIT,
+            )
+            run.set_property("domain", task.domain)
+            run.set_property("problem", task.problem)
+            run.set_property("algorithm", "downward-gbfs-lazy-hff-pref-ff")
+            run.set_property("wall_time_limit", WALL_TIME_LIMIT)
+            run.set_property("memory_limit", MEMORY_LIMIT)
+            run.set_property("id", ["downward-gbfs-lazy-hff-pref-ff", task.domain, task.problem])
 
 # Add step that writes experiment files to disk.
 exp.add_step("build", exp.build)
